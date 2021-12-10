@@ -5,17 +5,22 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r dotenv/config src/index.js",
-    "start": "node src/index.js"
+    "dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./dev.env",
+    "start": "node -r dotenv/config src/index.js dotenv_config_path=./prod.env",
+    "deploy": "./deploy.sh"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.0.12"
+    "mongoose": "^6.1.1",
+    "nodemailer": "^6.7.2"
   },
   "devDependencies": {
     "dotenv": "^10.0.0",
-    "nodemon": "^2.0.14"
+    "nodemon": "^2.0.15",
+    "npm-check-updates": "^12.0.3"
   }
 }

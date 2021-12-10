@@ -1,7 +1,7 @@
 node_modules/
+Dockerfile
 .github/
 .git
 .gitignore
 .prettierrc
-.env
 Readme.md
