@@ -1,5 +1,4 @@
 const error = (error, req, res, next) => {
-  console.log(error)
   if (error.name) resolveId(error)
   switch (error.id) {
     case 1:

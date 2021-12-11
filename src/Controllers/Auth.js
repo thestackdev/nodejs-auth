@@ -140,9 +140,11 @@ const VerifyOtp = async (req, res, next) => {
 
 const GetUser = async (req, res, next) => {
   try {
-    const user = await UserModal.findById(req._id)
+    const user = await UserModal.findById(req._id).select(
+      '_id , name , username , email'
+    )
     if (!user) throw { id: 6 }
-    res.send({ user })
+    res.send(user)
   } catch (error) {
     next(error)
   }
