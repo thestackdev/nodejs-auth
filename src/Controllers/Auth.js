@@ -150,6 +150,19 @@ const GetUser = async (req, res, next) => {
   }
 }
 
+const Logout = async (req, res, next) => {
+  try {
+    res
+      .cookie('token', null, {
+        ...JSON.parse(process.env.CookieOptions),
+        maxAge: 1,
+      })
+      .send('Ok')
+  } catch (error) {
+    next(error)
+  }
+}
+
 export default {
   Login,
   Register,
@@ -158,4 +171,5 @@ export default {
   RequestOtp,
   VerifyOtp,
   GetUser,
+  Logout,
 }

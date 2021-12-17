@@ -13,14 +13,8 @@ app.use(cookieParser())
 app.use(
   cors({ origin: JSON.parse(process.env.ORIGIN).whitelist, credentials: true })
 )
-mongoose.connect(
-  process.env.MONGO_URL,
-  JSON.parse(process.env.MONGO_CONFIG),
-  (err) => {
-    if (err) console.log('Mongodb Connection failed')
-    else console.log('Mongodb Connection succeed!')
-  }
-)
+
+mongoose.connect(process.env.MONGO_URL, JSON.parse(process.env.MONGO_CONFIG))
 
 app.use('/auth', AuthRouter)
 app.use(ErrorMiddleware)

@@ -11,5 +11,6 @@ router.post('/resetpassword', AuthController.ResetPassword)
 router.post('/requestotp', AuthController.RequestOtp)
 router.post('/verifyotp', AuthController.VerifyOtp)
 router.get('/verifyToken', Authorise, AuthController.GetUser)
+router.get('/logout', Authorise, AuthController.Logout)
 
 export default router
