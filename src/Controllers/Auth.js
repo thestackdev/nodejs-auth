@@ -28,8 +28,8 @@ const Login = async (req, res, next) => {
 
 const Register = async (req, res, next) => {
   try {
-    const { email, password, name, username } = req.body
-    const user = await UserModal.create({ email, password, name, username })
+    const { email, password, username } = req.body
+    const user = await UserModal.create({ email, password, username })
     res.status(201).send(user._id)
   } catch (error) {
     next(error)
@@ -43,7 +43,7 @@ const Forgotpassword = async (req, res, next) => {
     const user = await UserModal.findOne({ email })
     if (!user) throw { id: 3 }
     const token = Helper.createResetToken({ _id: user._id })
-    await EmailServices.ResetPassword(user.email, user.name, token)
+    await EmailServices.ResetPassword(user.email, user.username, token)
     res.send('Ok')
   } catch (error) {
     next(error)
@@ -82,11 +82,11 @@ const RequestOtp = async (req, res, next) => {
     switch (purpose) {
       case 'EmailVerify':
         user.Otp.Purpose = 'EmailVerify'
-        await EmailServices.ConfirmEmail(user.email, user.name, _Otp)
+        await EmailServices.ConfirmEmail(user.email, user.username, _Otp)
         break
       case 'DeleteUser':
         user.Otp.Purpose = 'DeleteUser'
-        await EmailServices.DeleteUser(user.email, user.name, _Otp)
+        await EmailServices.DeleteUser(user.email, user.username, _Otp)
         break
       default:
         throw { id: 5 }
@@ -141,7 +141,7 @@ const VerifyOtp = async (req, res, next) => {
 const GetUser = async (req, res, next) => {
   try {
     const user = await UserModal.findById(req._id).select(
-      '_id , name , username , email'
+      '_id , username , email'
     )
     if (!user) throw { id: 6 }
     res.send(user)

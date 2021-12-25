@@ -4,12 +4,6 @@ import Helper from '../Helpers/index.js'
 
 const User = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      trim: true,
-      required: [true, 'name is required!'],
-      minlength: [6, 'name must be atleast 6 characters!'],
-    },
     username: {
       type: String,
       trim: true,

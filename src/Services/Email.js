@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-const ConfirmEmail = async (email, name, OTP) => {
+const ConfirmEmail = async (email, username, OTP) => {
   const transporter = nodemailer.createTransport({
     service: process.env.SMTP_SERVICE,
     auth: {
@@ -17,7 +17,7 @@ const ConfirmEmail = async (email, name, OTP) => {
       <div style="border-bottom:1px solid #eee">
         <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Shanmukeshwar</a>
       </div>
-      <p style="font-size:1.1em">Hi ${name},</p>
+      <p style="font-size:1.1em">Hi ${username},</p>
       <p>Thank you for joining us. Use the following OTP to complete your Sign Up procedures. OTP is valid for 5 minutes</p>
       <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
       <p style="font-size:0.9em;">Regards,<br />Shanmukeshwar</p>
@@ -33,7 +33,7 @@ const ConfirmEmail = async (email, name, OTP) => {
   await transporter.sendMail(mailOptions)
 }
 
-const ResetPassword = async (email, name, token) => {
+const ResetPassword = async (email, username, token) => {
   const transporter = nodemailer.createTransport({
     service: process.env.SMTP_SERVICE,
     auth: {
@@ -50,7 +50,7 @@ const ResetPassword = async (email, name, token) => {
       <div style="border-bottom:1px solid #eee">
         <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Shanmukeshwar</a>
       </div>
-      <p style="font-size:1.1em">Hi ${name},</p>
+      <p style="font-size:1.1em">Hi ${username},</p>
       <p>Thank you for being a valuable member of Shanmukeshwar. Use the following Link to reset your password. link is valid for 5 minutes</p>
       <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;"><a style="color: #fff; text-decoration: none" href=${
         process.env.ORIGIN + '/resetpassword/?token=' + token
@@ -101,7 +101,7 @@ const UpdateEmail = async (email, OTP) => {
   await transporter.sendMail(mailOptions)
 }
 
-const DeleteUser = async (email, name, OTP) => {
+const DeleteUser = async (email, username, OTP) => {
   const transporter = nodemailer.createTransport({
     service: process.env.SMTP_SERVICE,
     auth: {
@@ -118,7 +118,7 @@ const DeleteUser = async (email, name, OTP) => {
       <div style="border-bottom:1px solid #eee">
         <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Shanmukeshwar</a>
       </div>
-      <p style="font-size:1.1em">Hi ${name},</p>
+      <p style="font-size:1.1em">Hi ${username},</p>
       <p>We are sorry to see you go. Use the following OTP to delete your account. OTP is valid for 5 minutes</p>
       <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
       <p style="font-size:0.9em;">Regards,<br />Shanmukeshwar</p>
