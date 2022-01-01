@@ -16,7 +16,7 @@ const User = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, 'email is required!'],
-      unique: [true, 'There is already an account with this email!'],
+      unique: [true, 'Email already taken!'],
       validate: {
         validator: Helper.isEmail,
         message: (props) => `${props.value} is not a valid email!`,
