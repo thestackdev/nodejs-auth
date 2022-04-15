@@ -39,11 +39,13 @@ const error = (error, req, res, next) => {
       break
     default:
       res.status(500).send('Something went wrong!')
+      console.log(error)
       break
   }
 }
 
 const resolveId = (error) => {
+  console.log(error)
   switch (error.name) {
     case 'ValidationError':
       let message = []
@@ -64,6 +66,9 @@ const resolveId = (error) => {
       break
     case 'JsonWebTokenError':
       error.id = 11
+      break
+    case 'CastError':
+      error.id = 5
       break
     case 'TokenExpiredError':
       error.id = 12

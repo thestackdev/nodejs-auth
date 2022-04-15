@@ -1,8 +1,9 @@
-import UserModal from '../Models/User.js'
-import EmailServices from '../Services/Email.js'
-import Helper from '../Helpers/index.js'
+import UserModal from '../models/User.js'
+import EmailServices from '../services/email.js'
+import Helper from '../helpers/index.js'
+import constants from '../constants.js'
 
-const Login = async (req, res, next) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
     if (!email || !password)
@@ -18,15 +19,15 @@ const Login = async (req, res, next) => {
 
     if (!user.emailVerified) throw { id: 9, message: user._id }
 
-    const token = Helper.createToken({ _id: user._id })
+    const token = Helper.createToken(user._id, process.env.JWT_SECRET)
 
-    res.cookie('token', token, JSON.parse(process.env.CookieOptions)).send('Ok')
+    res.cookie('token', token, { ...constants.cookieOptions }).send('Ok')
   } catch (error) {
     next(error)
   }
 }
 
-const Register = async (req, res, next) => {
+const register = async (req, res, next) => {
   try {
     const { email, password, username } = req.body
     const user = await UserModal.create({ email, password, username })
@@ -36,13 +37,13 @@ const Register = async (req, res, next) => {
   }
 }
 
-const Forgotpassword = async (req, res, next) => {
+const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body
     if (!email) throw { id: 5 }
     const user = await UserModal.findOne({ email })
     if (!user) throw { id: 3 }
-    const token = Helper.createResetToken({ _id: user._id })
+    const token = Helper.createToken(user._id, process.env.RESET_SECRET)
     await EmailServices.ResetPassword(user.email, user.username, token)
     res.send('Ok')
   } catch (error) {
@@ -50,12 +51,12 @@ const Forgotpassword = async (req, res, next) => {
   }
 }
 
-const ResetPassword = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body
     if (!token || !password)
       throw { id: 1, message: 'Missing required fields!' }
-    const decode = Helper.verifyResetToken(token)
+    const decode = Helper.verifyToken(token, process.env.RESET_SECRET)
     if (!decode) throw { id: 5 }
     const user = await UserModal.findById(decode._id).select('+password')
     if (!user) throw { id: 6 }
@@ -69,31 +70,31 @@ const ResetPassword = async (req, res, next) => {
   }
 }
 
-const RequestOtp = async (req, res, next) => {
+const requestOtp = async (req, res, next) => {
   try {
-    const { purpose, _id } = req.body
-    if (!purpose || !_id) throw { id: 5 }
+    const { reason, _id } = req.body
+    if (!reason || !_id) throw { id: 5 }
 
     const user = await UserModal.findById(_id)
     if (!user) throw { id: 6 }
 
     const _Otp = Helper.GenOtp()
 
-    switch (purpose) {
-      case 'EmailVerify':
-        user.Otp.Purpose = 'EmailVerify'
+    switch (reason) {
+      case 'verify-email':
+        user.otp.reason = 'verify-email'
         await EmailServices.ConfirmEmail(user.email, user.username, _Otp)
         break
-      case 'DeleteUser':
-        user.Otp.Purpose = 'DeleteUser'
+      case 'delete-user':
+        user.otp.reason = 'delete-user'
         await EmailServices.DeleteUser(user.email, user.username, _Otp)
         break
       default:
         throw { id: 5 }
     }
 
-    user.Otp.Value = _Otp
-    user.Otp.Validity = new Date(Date.now() + 5 * 60 * 1000)
+    user.otp.value = _Otp
+    user.otp.expireAt = new Date(Date.now() + 5 * 60 * 1000)
     await user.save()
 
     res.end()
@@ -102,30 +103,28 @@ const RequestOtp = async (req, res, next) => {
   }
 }
 
-const VerifyOtp = async (req, res, next) => {
+const verifyOtp = async (req, res, next) => {
   try {
-    const { _id, otp, purpose } = req.body
-    if (!_id || !otp || !purpose) throw { id: 5 }
+    const { _id, otp, reason } = req.body
+    if (!_id || !otp || !reason) throw { id: 5 }
 
     const user = await UserModal.findById(_id)
     if (!user) throw { id: 6 }
 
-    if (otp !== user.Otp.Value) throw { id: 7 }
-    if (user.Otp.Validity - Date.now() < 0) throw { id: 8 }
+    if (otp !== user.otp.value) throw { id: 7 }
+    if (user.otp.expireAt - Date.now() < 0) throw { id: 8 }
 
-    user.Otp.Value = null
-    user.Otp.Validity = null
+    user.otp.value = null
+    user.otp.expireAt = null
 
-    switch (purpose) {
-      case 'EmailVerify':
+    switch (reason) {
+      case 'verify-email':
         user.emailVerified = true
-        const token = Helper.createToken({ _id: user._id })
+        const token = Helper.createToken(user._id, process.env.JWT_SECRET)
         await user.save()
-        res
-          .cookie('token', token, JSON.parse(process.env.CookieOptions))
-          .send('Ok')
+        res.cookie('token', token, { ...constants.cookieOptions }).send('Ok')
         break
-      case 'DeleteUser':
+      case 'delete-user':
         await UserModal.findByIdAndDelete(_id)
         res.clearCookie('token').send('Ok')
         return
@@ -138,7 +137,7 @@ const VerifyOtp = async (req, res, next) => {
   }
 }
 
-const GetUser = async (req, res, next) => {
+const getUser = async (req, res, next) => {
   try {
     const user = await UserModal.findById(req._id).select(
       '_id , username , email'
@@ -150,13 +149,10 @@ const GetUser = async (req, res, next) => {
   }
 }
 
-const Logout = async (req, res, next) => {
+const logout = async (req, res, next) => {
   try {
     res
-      .cookie('token', null, {
-        ...JSON.parse(process.env.CookieOptions),
-        maxAge: 1,
-      })
+      .cookie('token', null, { ...constants.cookieOptions, maxAge: 1 })
       .send('Ok')
   } catch (error) {
     next(error)
@@ -164,12 +160,12 @@ const Logout = async (req, res, next) => {
 }
 
 export default {
-  Login,
-  Register,
-  Forgotpassword,
-  ResetPassword,
-  RequestOtp,
-  VerifyOtp,
-  GetUser,
-  Logout,
+  login,
+  register,
+  forgotPassword,
+  resetPassword,
+  requestOtp,
+  verifyOtp,
+  getUser,
+  logout,
 }

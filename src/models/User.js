@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import bcryptjs from 'bcryptjs'
-import Helper from '../Helpers/index.js'
+import Helper from '../helpers/index.js'
 
 const User = new mongoose.Schema(
   {
@@ -16,7 +16,7 @@ const User = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, 'email is required!'],
-      unique: [true, 'Email already taken!'],
+      unique: [true, 'email already taken!'],
       validate: {
         validator: Helper.isEmail,
         message: (props) => `${props.value} is not a valid email!`,
@@ -33,13 +33,13 @@ const User = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    Otp: {
-      Purpose: {
+    otp: {
+      reason: {
         type: String,
-        enum: ['EmailVerify', 'PasswordReset', 'DeleteUser'],
+        enum: ['verify-email', 'reset-password', 'delete-user'],
       },
-      Value: String,
-      Validity: Date,
+      value: String,
+      expireAt: Date,
     },
   },
   { timestamps: true }

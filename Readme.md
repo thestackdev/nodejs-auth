@@ -1,1 +1,1 @@
-# Nodejs Auth
+# Accounts server for fullstacklab.org
