@@ -2,12 +2,12 @@ import UserModal from '../models/User.js'
 import EmailServices from '../services/email.js'
 import Helper from '../helpers/index.js'
 import constants from '../constants.js'
+import Joi from 'joi'
 
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
-    if (!email || !password)
-      throw { id: 1, message: 'Missing required fields!' }
+    if (!email || !password) throw { id: 1 }
     if (!Helper.isEmail(email)) throw { id: 2 }
     if (!Helper.isPassword(password)) throw { id: 4 }
 
@@ -40,7 +40,7 @@ const register = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body
-    if (!email) throw { id: 5 }
+    if (!email) throw { id: 1 }
     const user = await UserModal.findOne({ email })
     if (!user) throw { id: 3 }
     const token = Helper.createToken(user._id, process.env.RESET_SECRET)
@@ -54,12 +54,11 @@ const forgotPassword = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body
-    if (!token || !password)
-      throw { id: 1, message: 'Missing required fields!' }
+    if (!token || !password) throw { id: 1 }
     const decode = Helper.verifyToken(token, process.env.RESET_SECRET)
     if (!decode) throw { id: 5 }
     const user = await UserModal.findById(decode._id).select('+password')
-    if (!user) throw { id: 6 }
+    if (!user) throw { id: 3 }
 
     user.password = password
     await user.save()
@@ -73,10 +72,10 @@ const resetPassword = async (req, res, next) => {
 const requestOtp = async (req, res, next) => {
   try {
     const { reason, _id } = req.body
-    if (!reason || !_id) throw { id: 5 }
+    if (!reason || !_id) throw { id: 1 }
 
     const user = await UserModal.findById(_id)
-    if (!user) throw { id: 6 }
+    if (!user) throw { id: 3 }
 
     const _Otp = Helper.GenOtp()
 
@@ -109,7 +108,7 @@ const verifyOtp = async (req, res, next) => {
     if (!_id || !otp || !reason) throw { id: 5 }
 
     const user = await UserModal.findById(_id)
-    if (!user) throw { id: 6 }
+    if (!user) throw { id: 3 }
 
     if (otp !== user.otp.value) throw { id: 7 }
     if (user.otp.expireAt - Date.now() < 0) throw { id: 8 }
@@ -142,7 +141,7 @@ const getUser = async (req, res, next) => {
     const user = await UserModal.findById(req._id).select(
       '_id , username , email'
     )
-    if (!user) throw { id: 6 }
+    if (!user) throw { id: 3 }
     res.send(user)
   } catch (error) {
     next(error)

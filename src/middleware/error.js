@@ -2,44 +2,41 @@ const error = (error, req, res, next) => {
   if (error.name) resolveId(error)
   switch (error.id) {
     case 1:
-      res.status(400).send(error.message)
+      res.status(400).send('Missing required fields')
       break
     case 2:
-      res.status(404).send({ email: 'Wrong Email' })
+      res.status(400).send({ email: 'email malformatted' })
       break
     case 3:
-      res.status(400).send({ email: 'No user found' })
+      res.status(404).send({ email: 'No user found' })
       break
     case 4:
-      res.status(400).send({ password: 'Wrong password!' })
+      res.status(400).send({ password: 'Wrong password' })
       break
     case 5:
-      res.status(400).send('Invalid Request!')
+      res.status(400).send('Invalid Reason')
       break
     case 6:
-      res.status(404).send('No user found!')
+      res.status(403).send(error.message)
       break
     case 7:
-      res.status(404).send('Wrong Otp!')
+      res.status(403).send('Wrong Otp!')
       break
     case 8:
-      res.status(401).send('Otp Expired!')
+      res.status(403).send('Otp Expired!')
       break
     case 9:
       res.status(401).send({ email: 'Email Unverified', _id: error.message })
       break
-    case 10:
-      res.status(400).send(`Syntax Error!`)
-      break
     case 11:
-      res.status(401).send('Unauthorised')
+      res.status(403).send('Unauthorised')
       break
     case 12:
-      res.status(401).send({ expired: 'Session Expired' })
+      res.status(403).send({ reason: 'Session Expired' })
       break
     default:
-      res.status(500).send('Something went wrong!')
       console.log(error)
+      res.status(500).send('Something went wrong!')
       break
   }
 }
@@ -53,10 +50,10 @@ const resolveId = (error) => {
         message.push({ [i]: error.errors[i].properties.message })
       }
       error.message = message
-      error.id = 1
+      error.id = 6
       break
     case 'MongoServerError':
-      error.id = 1
+      error.id = 6
       if (error.code === 11000) {
         if (error.keyValue.username)
           error.message = { username: 'Username already taken' }
@@ -67,14 +64,14 @@ const resolveId = (error) => {
     case 'JsonWebTokenError':
       error.id = 11
       break
-    case 'CastError':
-      error.id = 5
-      break
     case 'TokenExpiredError':
       error.id = 12
       break
+    case 'CastError':
+      error.id = 1000
+      break
     case 'SyntaxError':
-      error.id = 10
+      error.id = 1000
       break
     default:
       break
