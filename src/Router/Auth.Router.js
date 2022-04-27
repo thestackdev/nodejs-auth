@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import authController from '../Controllers/auth.js'
+import authController from '../Controllers/Auth.Controller.js'
 import authorise from '../Middleware/authorise.js'
 
 const router = Router()
@@ -7,7 +7,11 @@ const router = Router()
 router.post('/login', authController.login)
 router.post('/register', authController.register)
 router.post('/forgot_password', authController.forgotPassword)
-router.post('/reset_password', authController.resetPassword)
+router.post(
+  '/reset_password',
+  authorise.verifyPasswordResetAccess,
+  authController.resetPassword
+)
 router.post('/request_otp', authorise.verifyAccess, authController.requestOtp)
 router.post('/verify_otp', authorise.verifyAccess, authController.verifyOtp)
 router.get(

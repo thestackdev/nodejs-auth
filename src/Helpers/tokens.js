@@ -1,11 +1,34 @@
 import Jsonwebtoken from 'jsonwebtoken'
 
-const createToken = (_id, secret) => {
-  return Jsonwebtoken.sign({ _id }, secret)
+const { ACCESS_SECRET, RESET_SECRET } = process.env
+
+const createAccessToken = (uid) => {
+  return Jsonwebtoken.sign({}, ACCESS_SECRET, {
+    expiresIn: '1y',
+    issuer: 'fullstacklab.org',
+    audience: uid,
+  })
 }
 
-const verifyToken = (token, secret) => {
-  return Jsonwebtoken.verify(token, secret)
+const verifyAccessToken = (token) => {
+  return Jsonwebtoken.verify(token, ACCESS_SECRET)
 }
 
-export default { createToken, verifyToken }
+const createPasswordResetToken = (uid) => {
+  return Jsonwebtoken.sign({}, RESET_SECRET, {
+    expiresIn: '5m',
+    issuer: 'fullstacklab.org',
+    audience: uid,
+  })
+}
+
+const verifyPasswordResetToken = (token) => {
+  return Jsonwebtoken.verify(token, RESET_SECRET)
+}
+
+export default {
+  createAccessToken,
+  verifyAccessToken,
+  createPasswordResetToken,
+  verifyPasswordResetToken,
+}

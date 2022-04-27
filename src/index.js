@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import AuthRouter from './Router/auth.js'
+import AuthRouter from './Router/Auth.Router.js'
 import ErrorMiddleware from './Middleware/error.js'
 import constants from './constants.js'
 import './Helpers/mongodb.js'

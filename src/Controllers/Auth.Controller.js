@@ -1,5 +1,5 @@
 import UserModal from '../Models/User.js'
-import EmailServices from '../Services/email.js'
+import EmailServices from '../Services/Mailer.js'
 import tokens from '../Helpers/tokens.js'
 import constants from '../constants.js'
 import validator from '../Helpers/validator.js'
@@ -17,7 +17,7 @@ const login = async (req, res, next) => {
     const passwordMatch = await user.verifyPassword(password)
     if (!passwordMatch) throw { id: 3 }
 
-    const token = tokens.createToken(user._id, process.env.TOKEN_SECRET)
+    const token = tokens.createAccessToken(user.id)
     res.cookie('token', token, { ...constants.cookieOptions }).send({
       success: true,
     })
@@ -40,13 +40,22 @@ const register = async (req, res, next) => {
 
 const forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body
-    if (!email) throw { id: 1 }
-    const user = await UserModal.findOne({ email })
+    const data = await validator.forgotPasswordSchema.validateAsync(req.body)
+    const { email } = data
+
+    const user = await UserModal.findOne({ email }).select('+password')
     if (!user) throw { id: 3 }
-    const token = tokens.createToken(user._id, process.env.RESET_SECRET)
+
+    const token = tokens.createPasswordResetToken(user.id)
+    await client.set(token, 'Password Reset', {
+      EX: 300,
+    })
+
     await EmailServices.ResetPassword(user.email, user.username, token)
-    res.send('Ok')
+    res.send({
+      success: true,
+      message: 'please check your email',
+    })
   } catch (error) {
     next(error)
   }
@@ -54,17 +63,29 @@ const forgotPassword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    const { token, password } = req.body
-    if (!token || !password) throw { id: 1 }
-    const decode = tokens.verifyToken(token, process.env.RESET_SECRET)
-    if (!decode) throw { id: 5 }
-    const user = await UserModal.findById(decode._id).select('+password')
+    const token = req.query.token
+    const data = await validator.resetPasswordSchema.validateAsync(req.body)
+    const { password } = data
+
+    let cached = await client.GET(token)
+    if (!cached) throw { id: 5 }
+
+    const user = await UserModal.findById(req.payload.aud).select('+password')
     if (!user) throw { id: 3 }
+
+    const isOldPassword = await user.verifyPassword(password)
+
+    if (isOldPassword === true) throw { id: 4 }
 
     user.password = password
     await user.save()
 
-    res.send('Ok')
+    await client.del(token)
+
+    res.send({
+      success: true,
+      message: 'password updated successfully',
+    })
   } catch (error) {
     next(error)
   }
@@ -75,7 +96,7 @@ const requestOtp = async (req, res, next) => {
     const data = await validator.requestOtpSchema.validateAsync(req.body)
     const { reason } = data
 
-    const user = await UserModal.findById(req._id)
+    const user = await UserModal.findById(req.payload.aud)
     if (!user) throw { id: 3 }
 
     const otp = otpGenerator.generate(6, {
@@ -83,7 +104,9 @@ const requestOtp = async (req, res, next) => {
       specialChars: false,
     })
 
-    await client.set(req._id, JSON.stringify({ otp, reason }), { EX: 300 })
+    await client.set(req.payload.aud, JSON.stringify({ otp, reason }), {
+      EX: 300,
+    })
 
     switch (reason) {
       case 'verify-email':
@@ -111,10 +134,10 @@ const verifyOtp = async (req, res, next) => {
     const data = await validator.verifyOtpSchema.validateAsync(req.body)
     const { otp } = data
 
-    const user = await UserModal.findById(req._id)
+    const user = await UserModal.findById(req.payload.aud)
     if (!user) throw { id: 3 }
 
-    let cached = await client.get(req._id)
+    let cached = await client.get(req.payload.aud)
     if (!cached) throw { id: 8 }
     else cached = JSON.parse(cached)
 
@@ -130,14 +153,14 @@ const verifyOtp = async (req, res, next) => {
         })
         break
       case 'delete-user':
-        await UserModal.findByIdAndDelete(req._id)
+        await UserModal.findByIdAndDelete(req.payload.aud)
         res.clearCookie('token').send({
           success: true,
           message: 'user deleted successfully',
         })
         return
     }
-    await client.del(req._id)
+    await client.del(req.payload.aud)
   } catch (error) {
     next(error)
   }
@@ -145,7 +168,7 @@ const verifyOtp = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
   try {
-    const user = await UserModal.findById(req._id).select(
+    const user = await UserModal.findById(req.payload.aud).select(
       '_id , username , email , emailVerified'
     )
     if (!user) throw { id: 3 }

@@ -11,6 +11,14 @@ const registerSchema = Joi.object({
   password: Joi.string().min(6).required(),
 })
 
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().lowercase().required(),
+})
+
+const resetPasswordSchema = Joi.object({
+  password: Joi.string().min(6).required(),
+})
+
 const requestOtpSchema = Joi.object({
   reason: Joi.string()
     .lowercase()
@@ -25,6 +33,8 @@ const verifyOtpSchema = Joi.object({
 export default {
   loginSchema,
   registerSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   requestOtpSchema,
   verifyOtpSchema,
 }

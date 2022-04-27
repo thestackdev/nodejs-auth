@@ -15,9 +15,17 @@ const error = (error, req, res, next) => {
       status = 401
       options.message = 'email/password does not match'
       break
+    case 4:
+      status = 422
+      options.message = 'please use a new password'
+      break
     case 5:
       status = 400
       options.message = 'bad request'
+      break
+    case 6:
+      status = 403
+      options.message = 'unauthorized request'
       break
     case 7:
       status = 401

@@ -3,14 +3,20 @@ import User from '../Models/User.js'
 
 const verifyAccess = (req, res, next) => {
   try {
-    if (!req.cookies.token) throw { id: 5 }
-    const decode = tokens.verifyToken(
-      req.cookies.token,
-      process.env.TOKEN_SECRET
-    )
-    if (!decode) throw { id: 11 }
+    if (!req.cookies.token) throw { id: 6 }
+    const decode = tokens.verifyAccessToken(req.cookies.token)
+    req.payload = decode
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
 
-    req._id = decode._id
+const verifyPasswordResetAccess = async (req, res, next) => {
+  try {
+    if (!req.query.token) throw { id: 6 }
+    const decode = tokens.verifyPasswordResetToken(req.query.token)
+    req.payload = decode
     next()
   } catch (error) {
     next(error)
@@ -19,8 +25,8 @@ const verifyAccess = (req, res, next) => {
 
 const checkEmailVerified = async (req, res, next) => {
   try {
-    const user = await User.findById(req._id)
-    if (!user) throw { id: 3 }
+    const user = await User.findById(req.payload.aud)
+    if (!user) throw { id: 6 }
 
     if (user.emailVerified !== true) throw { id: 9 }
     next()
@@ -29,4 +35,4 @@ const checkEmailVerified = async (req, res, next) => {
   }
 }
 
-export default { verifyAccess, checkEmailVerified }
+export default { verifyAccess, checkEmailVerified, verifyPasswordResetAccess }

@@ -26,7 +26,6 @@ const ConfirmEmail = async (email, username, OTP) => {
       <hr style="border:none;border-top:1px solid #eee" />
       <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
         <p>Fullstacklab Inc</p>
-        <p>Hitech city , Hyderabad</p>
         <p>India</p>
       </div>
     </div>
@@ -62,7 +61,6 @@ const ResetPassword = async (email, username, token) => {
       <hr style="border:none;border-top:1px solid #eee" />
       <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
         <p>Fullstacklab Inc</p>
-        <p>Hitech city , Hyderabad</p>
         <p>India</p>
       </div>
     </div>
@@ -96,7 +94,6 @@ const UpdateEmail = async (email, OTP) => {
       <hr style="border:none;border-top:1px solid #eee" />
       <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
         <p>Fullstacklab Inc</p>
-        <p>Hitech city , Hyderabad</p>
         <p>India</p>
       </div>
     </div>
@@ -130,7 +127,6 @@ const DeleteUser = async (email, username, OTP) => {
       <hr style="border:none;border-top:1px solid #eee" />
       <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
         <p>Fullstacklab Inc</p>
-        <p>Hitech city , Hyderabad</p>
         <p>India</p>
       </div>
     </div>
